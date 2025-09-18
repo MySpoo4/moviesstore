@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block content %}
+<div class="container my-4">
+  <h2 class="mb-4">All Reviews</h2>
+  <ul class="list-group">
+    {% for review in template_data.reviews %}
+    <li class="list-group-item pb-3 pt-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="card-title">
+            Review by {{ review.user.username }} for {{ review.movie.name }}
+          </h5>
+          <h6 class="card-subtitle mb-2 text-muted">
+            {{ review.date|date:"M d, Y H:i" }}
+          </h6>
+          <p class="card-text">{{ review.comment }}</p>
+        </div>
+        <!-- Edit/Delete buttons for owner -->
+        {% if user.is_authenticated and user == review.user %}
+        <div class="d-flex gap-2 flex-column align-items-end">
+          <a
+            class="btn btn-sm btn-primary"
+            href="{% url 'movies.edit_review' id=review.movie.id review_id=review.id %}"
+          >
+            Edit
+          </a>
+          <a
+            class="btn btn-sm btn-danger"
+            href="{% url 'movies.delete_review' id=review.movie.id review_id=review.id %}"
+          >
+            Delete
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      <!-- Like/Unlike + Count -->
+      <div class="d-flex align-items-center gap-2 mt-2">
+        {% if user.is_authenticated %}
+        <form
+          method="post"
+          action="{% url 'movies.toggle_like' review_id=review.id %}"
+        >
+          {% csrf_token %} {% if user in review.liked_by.all %}
+          <button type="submit" class="btn btn-sm btn-danger">Unlike</button>
+          {% else %}
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            Like
+          </button>
+          {% endif %}
+        </form>
+        {% endif %}
+        <span class="text-muted small"
+          >{{ review.num_likes }} like{{ review.num_likes|pluralize }}</span
+        >
+      </div>
+    </li>
+    {% empty %}
+    <li class="list-group-item text-center text-muted">No reviews yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock content %}
