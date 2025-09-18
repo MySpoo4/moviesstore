@@ -30,6 +30,14 @@ def add(request, id):
     return redirect("cart.index")
 
 
+def add_to_cart(request, id):
+    get_object_or_404(Movie, id=id)
+    cart = request.session.get("cart", {})
+    cart[id] = request.POST["quantity"]
+    request.session["cart"] = cart
+    return redirect("cart.index")
+
+
 def clear(request):
     request.session["cart"] = {}
     return redirect("cart.index")
@@ -39,7 +47,6 @@ def clear(request):
 def purchase(request):
     cart = request.session.get("cart", {})
     movie_ids = list(cart.keys())
-
     if movie_ids == []:
         return redirect("cart.index")
 
@@ -65,3 +72,5 @@ def purchase(request):
     template_data["order_id"] = order.id
     return render(request, "cart/purchase.html", {"template_data": template_data})
 
+
+# Create your views here.

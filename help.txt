@@ -1,0 +1,11 @@
+running project:
+python manage.py runserver
+
+Creating a new app (new subfolder):
+python manage.py startapp app_name
+
+When creating an app (above) you have to add it in INSTALLED_APPS in settings.py
+
+Making a new model:
+python manage.py makemigrations
+python manage.py migrate
