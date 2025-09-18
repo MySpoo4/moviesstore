@@ -39,4 +39,5 @@ urlpatterns = [
     path('liked/', views.liked_movies, name='movies.liked_movies'),
     path('<int:id>/like/', views.like_movie, name='movies.like_movie'),
     path('<int:id>/unlike/', views.unlike_movie, name='movies.unlike_movie'),
+    path('<int:id>/rate/', views.rate_movie, name='movies.rate_movie'),
 ]

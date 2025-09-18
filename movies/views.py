@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Movie, Review, Wishlist, Reply, Like
+from .models import Movie, Rating, Review, Wishlist, Reply, Like
 
 
 # Create your views here.
@@ -69,6 +69,20 @@ def show(request, id):
         "movies/show.html",
         {"template_data": template_data, "user": request.user},
     )
+
+
+@login_required
+def edit_rating(request, id, rating_id):
+    review = get_object_or_404(Rating, id=rating_id)
+    if request.user != review.user:
+        return redirect("movies.show", id=id)
+    elif request.method == "POST":
+        review = Rating.objects.get(id=rating_id)
+        review.stars = request.POST["stars"]
+        review.save()
+        return redirect("movies.show", id=id)
+    else:
+        return redirect("movies.show", id=id)
 
 
 @login_required
@@ -144,3 +158,23 @@ def unlike_movie(request, id):
 def liked_movies(request):
     liked = Movie.objects.filter(likes__user=request.user)
     return render(request, "movies/liked_movies.html", {"liked_movies": liked})
+
+
+@login_required
+def rate_movie(request, id):
+    movie = get_object_or_404(Movie, id=id)
+    if request.method == "POST":
+        stars = request.POST.get("stars")
+        if stars and stars.isdigit():
+            stars = int(stars)
+            if 1 <= stars <= 5:
+                print(stars)
+                rating, created = Rating.objects.get_or_create(
+                    user=request.user,
+                    movie=movie,
+                    defaults={'stars': stars}  # This sets stars when creating
+                )
+                if not created:
+                    rating.stars = stars
+                    rating.save()
+    return redirect("movies.show", id=id)

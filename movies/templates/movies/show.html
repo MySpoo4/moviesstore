@@ -7,28 +7,55 @@
                 <div class="col-md-6 mx-auto mb-3">
                     <h2>{{ template_data.movie.name }}</h2>
                     <hr />
-                    <p><b>Description:</b> {{ template_data.movie.description }}</p>
-                    <p><b>Price:</b> ${{ template_data.movie.price }}</p>
+                    <p>
+                        <b>Description:</b> {{ template_data.movie.description }}
+                    </p>
+                    <p>
+                        <b>Price:</b> ${{ template_data.movie.price }}
+                    </p>
+                    <p>
+                        <b>Rating:</b> {{ template_data.movie.avg_rating }}
+                    </p>
+                    <p>
+                        <b>Number of Ratings:</b> {{ template_data.movie.rating_count }}
+                    </p>
                     <div class="d-flex gap-2 mb-3">
                         {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'movies.rate_movie' id=template_data.movie.id %}" class="mb-3">
+                                {% csrf_token %}
+                                <label for="stars"><b>Rate this movie:</b></label>
+                                <select name="stars" id="stars" class="form-select w-auto d-inline-block" required>
+                                    <option value="">Choose...</option>
+                                    {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Submit Rating</button>
+                            </form>
+                        {% endif %}
+                        {% if user.is_authenticated %}
                             {% if template_data.movie.id in template_data.wishlisted_movie_ids %}
-                                <form method="post" action="{% url 'movies.remove_from_wishlist' id=template_data.movie.id %}">
+                                <form method="post"
+                                      action="{% url 'movies.remove_from_wishlist' id=template_data.movie.id %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-warning">Remove from Wishlist</button>
                                 </form>
                             {% else %}
-                                <form method="post" action="{% url 'movies.add_to_wishlist' id=template_data.movie.id %}">
+                                <form method="post"
+                                      action="{% url 'movies.add_to_wishlist' id=template_data.movie.id %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-success">Add to Wishlist</button>
                                 </form>
                             {% endif %}
                             {% if template_data.movie.id in template_data.liked_movie_ids %}
-                                <form method="post" action="{% url 'movies.unlike_movie' id=template_data.movie.id %}">
+                                <form method="post"
+                                      action="{% url 'movies.unlike_movie' id=template_data.movie.id %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-danger">Unlike</button>
                                 </form>
                             {% else %}
-                                <form method="post" action="{% url 'movies.like_movie' id=template_data.movie.id %}">
+                                <form method="post"
+                                      action="{% url 'movies.like_movie' id=template_data.movie.id %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-outline-success">Like</button>
                                 </form>
@@ -71,17 +98,24 @@
                                         {% for reply in review.replies.all %}
                                             <li class="list-group-item">
                                                 <strong>{{ reply.user.username }}:</strong> {{ reply.comment }}
-                                                <br><small class="text-muted">{{ reply.date }}</small>
+                                                <br>
+                                                <small class="text-muted">{{ reply.date }}</small>
                                             </li>
                                         {% empty %}
                                             <li class="list-group-item">No replies yet.</li>
                                         {% endfor %}
                                     </ul>
                                     {% if user.is_authenticated %}
-                                        <form method="post" action="{% url 'movies.add_reply' id=template_data.movie.id review_id=review.id %}" class="mt-2">
+                                        <form method="post"
+                                              action="{% url 'movies.add_reply' id=template_data.movie.id review_id=review.id %}"
+                                              class="mt-2">
                                             {% csrf_token %}
                                             <div class="input-group">
-                                                <input type="text" name="comment" class="form-control" placeholder="Reply to this review..." required>
+                                                <input type="text"
+                                                       name="comment"
+                                                       class="form-control"
+                                                       placeholder="Reply to this review..."
+                                                       required>
                                                 <button type="submit" class="btn btn-outline-primary">Reply</button>
                                             </div>
                                         </form>
