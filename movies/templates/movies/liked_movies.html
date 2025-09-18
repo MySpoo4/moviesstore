@@ -8,7 +8,7 @@
                     <h2>List of Movies</h2>
                     <hr />
                     <p>
-                        <a href="{% url 'movies.liked' %}" class="btn btn-success">Go to Liked Movies</a>
+                        <a href="{% url 'movies.index' %}" class="btn btn-success">Return to Movies</a>
                     </p>
                     <p class="card-text">
                         <form method="GET">
@@ -32,9 +32,14 @@
                     <div class="col-md-4 col-lg-3 mb-2">
                         <div class="p-2 card align-items-center pt-4">
                             <img src="{{ movie.image.url }}" class="card-img-top rounded img-card-200">
-                            <div class="card-body text-center">
+                            <div class="card-body d-flex justify-content-center align-items-center gap-2">
                                 <a href="{% url 'movies.show' id=movie.id %}"
                                    class="btn bg-dark text-white">{{ movie.name }}</a>
+
+                                <form method="post" action="{% url 'toggle_like' movie.id %}">
+                                    {% csrf_token %}
+                                        <button class="btn btn-danger" type="submit">Unlike</button>
+                                </form>
                             </div>
                         </div>
                     </div>
