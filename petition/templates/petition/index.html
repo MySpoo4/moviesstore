@@ -1,0 +1,45 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Petitions</h1>
+    <a href="{% url 'petition.create' %}" class="btn btn-primary"
+      >Create New Petition</a
+    >
+  </div>
+
+  {% if petitions %}
+  <div class="list-group">
+    {% for petition in petitions %}
+    <div
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <a
+        href="{% url 'petition.show' id=petition.id %}"
+        class="flex-grow-1 text-decoration-none text-dark"
+      >
+        <div>
+          <h5 class="mb-1">{{ petition.title }}</h5>
+          <small class="text-muted">By: {{ petition.author.username }}</small>
+        </div>
+      </a>
+
+      <span class="badge bg-primary rounded-pill me-3"
+        >{{ petition.vote_count }}</span
+      >
+
+      {% if user.is_authenticated and user == petition.author %}
+      <a
+        class="btn btn-danger btn-sm"
+        href="{% url 'petition.delete' id=petition.id %}"
+      >
+        Delete
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-center">No petitions have been created yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
