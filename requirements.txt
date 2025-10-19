@@ -1,0 +1,7 @@
+asgiref
+Django
+pillow
+sqlparse
+typing_extensions
+googlemaps
+python-dotenv
