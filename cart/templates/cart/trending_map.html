@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>Local Popularity Map</h2>
+        <p>Discover what movies are trending in different regions!</p>
+        <hr />
+      </div>
+    </div>
+    
+    <!-- Map Container -->
+    <div class="row">
+      <div class="col-12">
+        <div id="map" style="width: 100%; height: 600px;"></div>
+      </div>
+    </div>
+    
+    <!-- Selected Region Info -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div id="region-info" class="card p-3">
+          <h4>Region Details</h4>
+          <p id="region-name" class="text-muted">Hover over or click a region to see trending movies</p>
+          <div id="movie-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Store state data in a hidden script tag -->
+{{ template_data.state_data|json_script:"state-data" }}
+
+<script>
+  // Parse state data from Django
+  const stateData = JSON.parse(document.getElementById('state-data').textContent);
+  
+  let map;
+  let infoWindow;
+  
+  function initMap() {
+    // Initialize map centered on USA
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 39.8283, lng: -98.5795 },
+      zoom: 4
+    });
+    
+    infoWindow = new google.maps.InfoWindow();
+    
+    // Add markers for each state with purchase data
+    addStateMarkers();
+  }
+  
+  function addStateMarkers() {
+    // State coordinates (you'll need to add more)
+    const stateCoordinates = {
+      'Georgia': { lat: 32.1656, lng: -82.9001 },
+      'California': { lat: 36.7783, lng: -119.4179 },
+      'Texas': { lat: 31.9686, lng: -99.9018 },
+      'New York': { lat: 40.7128, lng: -74.0060 },
+      'Florida': { lat: 27.6648, lng: -81.5158 },
+      // Add more states as needed
+    };
+    
+    for (const [stateName, movies] of Object.entries(stateData)) {
+      const coords = stateCoordinates[stateName];
+      if (!coords) continue; // Skip states without coordinates
+      
+      // Create marker
+      const marker = new google.maps.Marker({
+        position: coords,
+        map: map,
+        title: stateName,
+        animation: google.maps.Animation.DROP
+      });
+      
+      // Add click/hover listeners
+      marker.addListener('click', () => {
+        showStateInfo(stateName, movies, marker);
+      });
+      
+      marker.addListener('mouseover', () => {
+        showStateInfoPanel(stateName, movies);
+      });
+    }
+  }
+  
+  function showStateInfo(stateName, movies, marker) {
+    let content = `<div style="padding: 10px;">
+      <h5>${stateName}</h5>
+      <p><strong>Top Trending Movies:</strong></p>
+      <ul>`;
+    
+    movies.forEach(movie => {
+      content += `<li><strong>${movie.movie_name}</strong>: ${movie.times_purchased} purchases</li>`;
+    });
+    
+    content += `</ul></div>`;
+    
+    infoWindow.setContent(content);
+    infoWindow.open(map, marker);
+  }
+  
+  function showStateInfoPanel(stateName, movies) {
+    document.getElementById('region-name').textContent = stateName;
+    
+    let movieListHtml = '<ul class="list-group">';
+    movies.forEach((movie, index) => {
+      movieListHtml += `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>#${index + 1}</strong> ${movie.movie_name}
+          </div>
+          <span class="badge bg-primary rounded-pill">${movie.times_purchased} purchases</span>
+        </li>`;
+    });
+    movieListHtml += '</ul>';
+    
+    document.getElementById('movie-list').innerHTML = movieListHtml;
+  }
+</script>
+
+<!-- Load Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ template_data.maps_api_key }}&callback=initMap" async defer></script>
+
+{% endblock content %}

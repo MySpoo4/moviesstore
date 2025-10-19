@@ -7,4 +7,5 @@ urlpatterns = [
     path("clear/", views.clear, name="cart.clear"),
     path("purchase/", views.purchase, name="cart.purchase"),
     path("save-location/", views.save_location, name="cart.save_location"),
+    path("trending-map/", views.trending_map, name="cart.trending_map"),
 ]

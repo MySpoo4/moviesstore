@@ -1,19 +1,30 @@
 import googlemaps
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.db.models import Sum
 from movies.models import Movie, MoviePurchaseLocation
 from .utils import calculate_cart_total
 from .models import Order, Item
 from django.contrib.auth.decorators import login_required
 
-load_dotenv()  
+# Load .env file from the project root
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 MAPS_API_KEY = os.environ.get("MAPS_API_KEY")
+
+# Debug: Print if API key is loaded (remove this after testing)
+if not MAPS_API_KEY:
+    print("WARNING: MAPS_API_KEY not found in environment variables!")
+    print(f"Looking for .env file at: {BASE_DIR / '.env'}")
+    print(f".env file exists: {(BASE_DIR / '.env').exists()}")
+
 gmaps = googlemaps.Client(key=MAPS_API_KEY)
 
 
@@ -155,3 +166,29 @@ def save_location(request):
         'status': 'error',
         'message': 'Invalid request method'
     }, status=405)
+
+
+def trending_map(request):
+    all_purchases = MoviePurchaseLocation.objects.all()
+    state_data = {}
+
+    for state in MoviePurchaseLocation.objects.values_list('state', flat=True).distinct():
+        state_name = state
+        top_movies = MoviePurchaseLocation.objects.filter(state=state_name).order_by('-times_purchased')[:3]
+        state_data[state_name] = [
+            {
+                'movie_name': item.movie.name,
+                'times_purchased': item.times_purchased,
+                'movie_id': item.movie.id
+            }
+            for item in top_movies
+        ]
+
+    template_data = {
+        'title': 'Trending Map',
+        'state_data': state_data,
+        'maps_api_key': MAPS_API_KEY
+    }
+    return render(request, "cart/trending_map.html", {"template_data": template_data})
+
+
