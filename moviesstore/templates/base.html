@@ -66,6 +66,7 @@
       </div>
     </nav>
     <!-- Header -->
+    {% csrf_token %}
     <div>{% block content %} {% endblock content %}</div>
     <!-- Footer -->
     <section class="p-3 ms-footer d-none d-md-block">
@@ -116,6 +117,59 @@
       </div>
     </section>
     <!-- Footer -->
+    
+    <!-- Geolocation Script -->
+    <script>
+        function requestLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        
+                        // Send coordinates to Django backend
+                        sendCoordinates(latitude, longitude);
+                    },
+                    function(error) {
+                        console.error('Error getting location:', error);
+                        alert('Unable to retrieve your location. Please check your browser settings.');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+        
+        function sendCoordinates(latitude, longitude) {
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Make AJAX POST request
+            fetch('{% url "cart.save_location" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `latitude=${latitude}&longitude=${longitude}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Location saved successfully:', data);
+                // You can add user feedback here if needed
+                // alert('Location saved successfully!');
+            })
+            .catch(error => {
+                console.error('Error saving location:', error);
+                alert('Error saving location. Please try again.');
+            });
+        }
+    </script>
   </body>
 </html>
 

@@ -29,6 +29,14 @@ class Review(models.Model):
     def __str__(self):
         return str(self.id) + " - " + self.movie.name
 
+class MoviePurchaseLocation(models.Model):
+    state = models.CharField(max_length=100)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    times_purchased = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+
+    def __str__(self):
+        return f"{self.movie.name} purchased {self.times_purchased} times in {self.state}"
+
 
 class Rating(models.Model):
     movie = models.ForeignKey(Movie, related_name="ratings", on_delete=models.CASCADE)
