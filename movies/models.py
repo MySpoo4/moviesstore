@@ -1,15 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Movie(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     description = models.TextField()
-    image = models.ImageField(upload_to='movie_images/')
+    image = models.ImageField(upload_to="movie_images/")
 
     def __str__(self):
-        return str(self.id) + ' - ' + self.name
+        return str(self.id) + " - " + self.name
+
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
@@ -19,4 +21,13 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.id) + ' - ' + self.movie.name
+        return str(self.id) + " - " + self.movie.name
+
+
+class SecurityQuestion(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    question = models.CharField(max_length=255)
+    answer = models.CharField(max_length=255)
+
+    def check_answer(self, answer):
+        return self.answer.lower() == answer.strip().lower()
